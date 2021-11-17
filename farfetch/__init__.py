@@ -37,8 +37,8 @@ class Farfetch:
             picUrl = pro[index3+20:index4]
             self.productList.append(proUrl)
             self.preloadPicList.append(picUrl)
-        #print(self.productList)
-        #print(self.preloadPicList)
+        print(self.productList)
+        print(self.preloadPicList)
         return
 
     def saveImg(self):
