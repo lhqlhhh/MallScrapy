@@ -24,8 +24,8 @@ if __name__ == '__main__':
 
     url = "https://www.farfetch.cn/cn/shopping/women/alexander-mcqueen/items.aspx"
     w = farfetch.Farfetch(url, am_women)
-    w.parseFarfetch()
-    w.getInfo()
+    w.parse_all_product()
+    #w.getInfo()
     # men
     am_men = wb.create_sheet(title="Alexander McQueen_men")
     url = ""

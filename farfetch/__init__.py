@@ -1,11 +1,14 @@
 from bs4 import BeautifulSoup
 import requests
-import re
+import threading
+from multiprocessing.dummy import Pool as ThreadPool
+from multiprocessing import process
 
 
 class Farfetch:
     def __init__(self, url, ws):
         self.prefix = "https://www.farfetch.cn/"
+        self.parser = "lxml"
         self.url = url
         self.ws = ws
         self.header = {
@@ -16,32 +19,37 @@ class Farfetch:
         }
         self.productList = []
         self.preloadPicList = []
+        self._lock = threading.Lock()
 
-    def _listProducts(self):
-        res = requests.get(url=self.url, headers=self.header)
-        soup = BeautifulSoup(res.content, "html.parser")
+    def _list_products(self):
+        soup = self.make_soup(self.url)
         products = soup.find_all(name="a", attrs={"data-component": "ProductCardLink"})
-        return products
-
-    def parseFarfetch(self):
-        products = self._listProducts()
-
         for product in products:
-            print(product)
-            pro = str(product)
-            index1 = pro.find("href")
-            index2 = pro.find(" target=")
-            index3 = pro.find("</div><meta content=\"")
-            index4 = pro.find(" itemprop=")
-            proUrl = pro[index1+6:index2]
-            picUrl = pro[index3+20:index4]
-            self.productList.append(proUrl)
-            self.preloadPicList.append(picUrl)
-        print(self.productList)
-        print(self.preloadPicList)
-        return
+            self.productList.append(str(product["href"]))
+            self.preloadPicList.append(product.meta["content"])
 
-    def saveImg(self):
+    def _single_product(self, url):
+        soup = self.make_soup(self.prefix+url)
+        content = soup.find(name="div", attrs={"data-tstid": "productDetails"})
+        description = content.find(name="p", attrs={"data-tstid": "fullDescription"}).p
+        #写入excel
+
+        made_in = content.find(name="p", attrs={"data-tstid": "madeIn"})
+
+        designer_style_id = content.find(name="p", attrs={"data-tstid": "designerStyleId"}).span
+
+        print(description)
+
+
+    def parse_all_product(self):
+        #pool = ThreadPool()
+        #for url in self.productList:
+        #    _ = pool.map(self._single_product, url)
+        self._list_products()
+        for url in self.productList:
+            self._single_product(url)
+
+    def save_images(self):
 
         return
 
@@ -56,4 +64,13 @@ class Farfetch:
             index2 = str(rawname).find("</span>")
             name = str(rawname)[index1+3:index2]
             print(name)
+        return
+
+    def make_soup(self, url):
+        res = requests.get(url=url, headers=self.header)
+        soup = BeautifulSoup(res.content, self.parser)
+        return soup
+
+    def shopping(self):
+
         return
