@@ -39,7 +39,8 @@ class Farfetch:
         content = soup.find(name="div", attrs={"data-tstid": "productDetails"})
         gallery = soup.find(name="div", attrs={"data-tstid": "gallery-and-productoffer"})
 
-        print(name)
+        print("content: ", content)
+        print("product name: ", name)
 
         para = content.find_all(name="p")
         details = ""
