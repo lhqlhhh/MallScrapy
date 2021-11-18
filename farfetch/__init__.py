@@ -38,12 +38,11 @@ class Farfetch:
         for product in products:
             product_name = product.find(name="p", attrs={"data-component": "ProductCardDescription", "itemprop": "name"}).text
             product_url = self.prefix + (str(product["href"]))
-            pic_url = str(product.meta["content"])
-            self.prod_pic_list.append([product_name, product_url, pic_url])
+            self.prod_pic_list.append([product_name, product_url])
         # remove first empty element
         self.prod_pic_list.pop(0)
 
-    def _single_product(self, name, url, pic):
+    def _single_product(self, name, url):
         soup = self.make_soup(url)
         content = soup.find(name="div", attrs={"data-tstid": "productDetails"})
         gallery = soup.find(name="div", attrs={"data-tstid": "gallery-and-productoffer"})
@@ -62,16 +61,20 @@ class Farfetch:
             data.append(img)
 
         # save to files
+        self._lock.acquire()
         self.ws.append(data)
+        self._lock.release()
 
     def parse_all_product(self):
         self._list_products()
-        #pool = ThreadPool()
-        #for elem in self.prod_pic_dict:
-        #    _ = pool.map(self._single_product, url)
+        pool = ThreadPool()
+        for elem in self.prod_pic_dict:
+            _ = pool.map(self._single_product, elem[0], elem[1])
+            pool.close()
+            pool.join()
 
-        for elem in self.prod_pic_list:
-            self._single_product(elem[0], elem[1], elem[2])
+        #for elem in self.prod_pic_list:
+        #    self._single_product(elem[0], elem[1])
 
     def make_soup(self, url):
         res = requests.get(url=url, headers=self.header)
