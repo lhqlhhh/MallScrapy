@@ -5,6 +5,15 @@ from multiprocessing.dummy import Pool as ThreadPool
 from multiprocessing import process
 
 
+def _save_image(url):
+    res = requests.get(url)
+    file_name = url.split('/')[-1]
+    with open(file_name, 'wb') as f:
+        for data in res.iter_content(128):
+            f.write(data)
+    return file_name
+
+
 class Farfetch:
     def __init__(self, url, ws):
         self.prefix = "https://www.farfetch.cn/"
@@ -20,51 +29,49 @@ class Farfetch:
         self.productList = []
         self.preloadPicList = []
         self._lock = threading.Lock()
+        self.data = [[]]
+        self.prod_pic_list = [[]]
 
     def _list_products(self):
         soup = self.make_soup(self.url)
         products = soup.find_all(name="a", attrs={"data-component": "ProductCardLink"})
         for product in products:
-            self.productList.append(str(product["href"]))
-            self.preloadPicList.append(product.meta["content"])
+            product_name = product.find(name="p", attrs={"data-component": "ProductCardDescription", "itemprop": "name"}).text
+            product_url = self.prefix + (str(product["href"]))
+            pic_url = str(product.meta["content"])
+            self.prod_pic_list.append([product_name, product_url, pic_url])
+        # remove first empty element
+        self.prod_pic_list.pop(0)
 
-    def _single_product(self, url):
-        soup = self.make_soup(self.prefix+url)
+    def _single_product(self, name, url, pic):
+        soup = self.make_soup(url)
         content = soup.find(name="div", attrs={"data-tstid": "productDetails"})
-        description = content.find(name="p", attrs={"data-tstid": "fullDescription"}).p
-        #写入excel
+        gallery = soup.find(name="div", attrs={"data-tstid": "gallery-and-productoffer"})
 
-        made_in = content.find(name="p", attrs={"data-tstid": "madeIn"})
+        para = content.find_all(name="p")
+        details = ""
+        for p in para:
+            details = details + p.text + "\n"
 
-        designer_style_id = content.find(name="p", attrs={"data-tstid": "designerStyleId"}).span
+        data = [name, details]
 
-        print(description)
+        pics = gallery.find_all(name="link", attrs={"itemprop": "image"})
+        for pic in pics:
+            # download pic
+            img = _save_image(pic)
+            data.append(img)
 
+        # save to files
+        self.ws.append(data)
 
     def parse_all_product(self):
-        #pool = ThreadPool()
-        #for url in self.productList:
-        #    _ = pool.map(self._single_product, url)
         self._list_products()
-        for url in self.productList:
-            self._single_product(url)
+        #pool = ThreadPool()
+        #for elem in self.prod_pic_dict:
+        #    _ = pool.map(self._single_product, url)
 
-    def save_images(self):
-
-        return
-
-
-    def getInfo(self):
-        for u in self.productList:
-            url = self.prefix + u
-            res = requests.get(url=url, headers=self.header)
-            soup = BeautifulSoup(res.content, "html.parser")
-            rawname = soup.find(name="span", attrs={"data-tstid": "cardInfo-description"})
-            index1 = str(rawname).find("n\">")
-            index2 = str(rawname).find("</span>")
-            name = str(rawname)[index1+3:index2]
-            print(name)
-        return
+        for elem in self.prod_pic_list:
+            self._single_product(elem[0], elem[1], elem[2])
 
     def make_soup(self, url):
         res = requests.get(url=url, headers=self.header)

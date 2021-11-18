@@ -24,17 +24,13 @@ if __name__ == '__main__':
 
     url = "https://www.farfetch.cn/cn/shopping/women/alexander-mcqueen/items.aspx"
     w = farfetch.Farfetch(url, am_women)
+    #w.list_products()
     w.parse_all_product()
     #w.getInfo()
     # men
     am_men = wb.create_sheet(title="Alexander McQueen_men")
     url = ""
 
-    #htm = requests.get("https://www.farfetch.cn/cn/shopping/women/alexander-mcqueen/items.aspx")
-    #htm = requests.get("https://www.baidu.com")
-    #print(htm.content)
-
-    #soup = BeautifulSoup(htm.content, "html.parser")
-    #print(soup.contents)
+    wb.save(dest_filename)
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
