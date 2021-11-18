@@ -1,16 +1,18 @@
 from bs4 import BeautifulSoup
 import requests
-import threading
-from multiprocessing.dummy import Pool as ThreadPool
-from multiprocessing import process
+from util import random_agents as ra
+import os
 
 
 def _save_image(url):
-    res = requests.get(url)
+    res = requests.get(url, headers=ra.random_agent())
     file_name = url.split('/')[-1]
-    with open(file_name, 'wb') as f:
-        for data in res.iter_content(128):
-            f.write(data)
+    if os.path.exists(file_name):
+        return file_name
+    else:
+        with open(file_name, 'wb') as f:
+            for data in res.iter_content(128):
+                f.write(data)
     return file_name
 
 
@@ -20,16 +22,6 @@ class Farfetch:
         self.parser = "lxml"
         self.url = url
         self.ws = ws
-        self.header = {
-            'User-Agent':
-                'Mozilla/5.0 (Windows NT 6.3; Win64; x64) '
-                'AppleWebKit/537.36 (KHTML, like Gecko) '
-                'Chrome/67.0.3396.79 Safari/537.36'
-        }
-        self.productList = []
-        self.preloadPicList = []
-        self._lock = threading.Lock()
-        self.data = [[]]
         self.prod_pic_list = [[]]
 
     def _list_products(self):
@@ -57,27 +49,20 @@ class Farfetch:
         pics = gallery.find_all(name="link", attrs={"itemprop": "image"})
         for pic in pics:
             # download pic
-            img = _save_image(pic)
+            img = _save_image(str(pic["href"]))
             data.append(img)
 
         # save to files
-        self._lock.acquire()
         self.ws.append(data)
-        self._lock.release()
 
     def parse_all_product(self):
         self._list_products()
-        pool = ThreadPool()
-        for elem in self.prod_pic_dict:
-            _ = pool.map(self._single_product, elem[0], elem[1])
-            pool.close()
-            pool.join()
 
-        #for elem in self.prod_pic_list:
-        #    self._single_product(elem[0], elem[1])
+        for elem in self.prod_pic_list:
+            self._single_product(elem[0], elem[1])
 
     def make_soup(self, url):
-        res = requests.get(url=url, headers=self.header)
+        res = requests.get(url=url, headers=ra.random_agent())
         soup = BeautifulSoup(res.content, self.parser)
         return soup
 
