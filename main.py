@@ -1,19 +1,55 @@
 import farfetch
-from openpyxl import Workbook
 
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    # alexander-mcqueen
 
+    # Alexander Mcqueen
     # women
-
     url = "https://www.farfetch.cn/cn/shopping/women/alexander-mcqueen/items.aspx"
-    amw = farfetch.Farfetch(url, "Alexander_McQueen_women")
-    amw.shopping()
-
+    alexander_mcqueen_wemen = farfetch.Farfetch(url, "Alexander_McQueen_women")
+    alexander_mcqueen_wemen.shopping()
     # men
-    url = ""
+    url = "https://www.farfetch.cn/cn/shopping/men/alexander-mcqueen/items.aspx"
+    alexander_mcqueen_men = farfetch.Farfetch(url, "Alexander_McQueen_men")
+    alexander_mcqueen_men.shopping()
+
+    # Alexander Wang
+    # Women
+
+    # Men
+
+    # Ami Paris
 
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    # Balenciaga
+
+    # Burberry
+
+    # Bottega Veneta
+
+    # Dior
+
+    # Fendi
+
+    # Givenchy
+
+    # Gucci
+
+    # Maison Margiela
+
+    # Loewe
+
+    # OffWhite
+
+    # Palm Angels
+
+    # Saint Laurent
+
+    # Valentino
+
+    # Thom Brwone
+
+    # We11done
+
+

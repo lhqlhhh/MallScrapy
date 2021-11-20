@@ -4,7 +4,6 @@ from openpyxl.drawing.image import Image
 from openpyxl.reader.excel import load_workbook
 from bs4 import BeautifulSoup
 import requests
-from util import Tactic
 import os
 import time
 
@@ -37,6 +36,7 @@ class Farfetch:
         ws = wb.active
         self.wb = wb
         self.ws = ws
+        self.ws.title = ["Product Name", "Detailed Description"]
         self.ws.column_dimensions['A'].width = 25
         self.ws.column_dimensions['B'].width = 65
         self.rows = 0
@@ -74,7 +74,6 @@ class Farfetch:
         content = soup.find(name="div", attrs={"data-tstid": "productDetails"})
         gallery = soup.find(name="div", attrs={"data-tstid": "gallery-and-productoffer"})
 
-        #print("content: ", content)
         print("product name: ", name)
 
         para = content.find_all(name="p")
@@ -92,14 +91,16 @@ class Farfetch:
             # download pic
             img_path = _save_image(str(pic["href"]), self.header)
             print(img_path)
+
             img = Image(img_path)
+
             coor = self.ws.cell(self.rows + 1, col).coordinate
             print(coor)
-            print(img.width, img.height)
+
             self.ws.column_dimensions[coor[0]].width = img.width * 0.03 * 4.374
             self.ws.row_dimensions[int(coor[1])].height = img.height * 0.03 * 27.682
             col += 1
-            self.ws.add_image(img, coor)
+            self.ws.add_image(img_path, coor)
         # 下一个空行
         self.rows += 1
         self.wb.save(self.excel_name)
