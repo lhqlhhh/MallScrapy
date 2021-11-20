@@ -11,12 +11,13 @@ import time
 def _save_image(url, header):
     res = requests.get(url, headers=header)
     file_name = url.split('/')[-1]
+    #file_name = file_name[:-4] + ".webp"
     if os.path.exists(file_name):
         return file_name
     else:
-        with open(file_name, 'wb') as f:
-            for data in res.iter_content(128):
-                f.write(data)
+        with open(file_name, "wb") as f:
+            f.write(res.content)
+
     return file_name
 
 
@@ -36,7 +37,6 @@ class Farfetch:
         ws = wb.active
         self.wb = wb
         self.ws = ws
-        self.ws.title = ["Product Name", "Detailed Description"]
         self.ws.column_dimensions['A'].width = 25
         self.ws.column_dimensions['B'].width = 65
         self.rows = 0
@@ -90,17 +90,16 @@ class Farfetch:
         for pic in pics:
             # download pic
             img_path = _save_image(str(pic["href"]), self.header)
-            print(img_path)
+            #print(img_path)
 
             img = Image(img_path)
 
             coor = self.ws.cell(self.rows + 1, col).coordinate
-            print(coor)
-
+            #print(coor)
             self.ws.column_dimensions[coor[0]].width = img.width * 0.03 * 4.374
             self.ws.row_dimensions[int(coor[1])].height = img.height * 0.03 * 27.682
             col += 1
-            self.ws.add_image(img_path, coor)
+            self.ws.add_image(img, coor)
         # 下一个空行
         self.rows += 1
         self.wb.save(self.excel_name)
