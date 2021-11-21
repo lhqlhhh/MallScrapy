@@ -1,1 +1,2 @@
-# MallScrapy
+# OnlineShopping
+# Current shopping FarFetch
