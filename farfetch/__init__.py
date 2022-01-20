@@ -7,6 +7,7 @@ import requests
 import os
 import time
 import datetime
+import logging
 from PIL import Image as PILImage
 
 
@@ -33,7 +34,7 @@ def _save_image(url, header, path):
 def _current_year_mon():
     time_format = '%Y-%m'
     cur_year_month = datetime.datetime.now().strftime(time_format)
-    print(cur_year_month)
+    #print(cur_year_month)
 
     return cur_year_month
 
@@ -85,7 +86,7 @@ class Farfetch:
             product_name = product.find(name="p",
                                             attrs={"data-component": "ProductCardDescription", "itemprop": "name"}).text
             product_url = self.prefix + (str(product["href"]))
-            print(product_url)
+            logging.info(product_url)
             self.prod_pic_list.append([product_name, product_url])
         # remove first empty element
         self.prod_pic_list.pop(0)
@@ -98,7 +99,7 @@ class Farfetch:
         gallery = soup.find(name="div", attrs={"data-tstid": "gallery-and-productoffer"})
 
         print("product name: ", name)
-
+        logging.info('product name: ' + name)
         para = content.find_all(name="p")
         details = ""
         for p in para:

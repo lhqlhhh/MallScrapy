@@ -1,11 +1,20 @@
-from PyQt5.QtWidgets import (QWidget, QComboBox, QPushButton, QFormLayout, QLabel, QLineEdit)
+import logging
+
+from PyQt5.QtWidgets import (QWidget, QComboBox, QMessageBox, QScrollArea, QPlainTextEdit, QPushButton, QFormLayout, QLabel)
 from PyQt5.QtGui import QIcon
+from PyQt5 import QtCore
 import farfetch
+import logsignal
 
 
 class GUI(QWidget):
     def __init__(self):
         super().__init__()
+
+        self.setGeometry(600, 400, 900, 550)
+        self.setWindowTitle("Spider")
+        self.setWindowIcon(QIcon('anime_icon.jpeg'))
+
         self.brands = ["alexander-mcQueen", "alexander-wang", "ami-alexandre-mattiussi",
                        "balenciaga", "burberry", "bottega-veneta",
                        "dior",
@@ -19,9 +28,14 @@ class GUI(QWidget):
                        "valentino",
                        "thom-browne",
                        "we11done"]
-        self.Init_UI()
 
-    def Init_UI(self):
+        self.textBox = QPlainTextEdit()
+        self.textBox.setReadOnly(True)
+        handler = logsignal.Handler()
+        logging.getLogger().addHandler(handler)
+        logging.getLogger().setLevel(logging.INFO)
+        handler.logSignal.connect(self.textBox.appendPlainText)
+
         brands = [[QIcon("./assets/all.png"), "All"],
                   [QIcon("./assets/am.jpg"), "Alexander McQueen"],
                   [QIcon("./assets/aw.jpg"), "Alexander Wang"],
@@ -42,38 +56,56 @@ class GUI(QWidget):
                   [QIcon("./assets/tb.jpg"), "Thom Browne"],
                   [QIcon("./assets/we11done.jpg"), "We11done"]]
 
-        self.setGeometry(600, 400, 900, 550)
-        self.setWindowTitle("Spider")
-        self.setWindowIcon(QIcon('anime_icon.jpeg'))
         # create a form layout
         self.formlayout = QFormLayout()
         self.brandLabel = QLabel("Brand")
+        # brand combo box（下拉框）
         self.combox = QComboBox(self)
         for brand in brands:
             self.combox.addItem(brand[0], brand[1])
-
+        # download button
         self.downloadBtn = QPushButton('Download', self)
         self.downloadBtn.clicked.connect(self.download)
+        # text edit to print running process
+
+        # # 添加滚动
+        # self.scrollArea = QScrollArea()
+        # self.scrollArea.setWidget(self.text)
+        # #self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        # #self.scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        # message box to print
+        # self.messageBox = QMessageBox()
+
         self.formlayout.addRow(self.brandLabel, self.combox)
         self.formlayout.addRow(self.downloadBtn)
+        # self.formlayout.addRow(self.scrollArea)
+        # self.formlayout.addRow(self.messageBox)
+        self.formlayout.addRow(self.textBox)
         self.setLayout(self.formlayout)
-
         self.show()
 
     def download(self):
+        logging.info('start downloading...')
         if self.combox.currentText() != "All":
+            logging.info('downloading ' + self.combox.currentText())
             brandName = self.combox.currentText().lower().replace(" ", "-")
             brandWomen = brandName + "-women"
             brandMen = brandName + "-men"
             urlWomen = "https://www.farfetch.cn/cn/shopping/women/" + brandName + "/items.aspx"
             urlMen = "https://www.farfetch.cn/cn/shopping/men/" + brandName + "/items.aspx"
+
             womenShopping = farfetch.Farfetch(urlWomen, brandWomen)
             menShopping = farfetch.Farfetch(urlMen, brandMen)
-            
+
             # start downloading
+            logging.info('shopping ' + brandWomen + ' closet...')
             womenShopping.shopping()
+            logging.info('finished shopping' + brandWomen + ' closet.')
+            logging.info('shopping ' + brandMen + ' closet...')
             menShopping.shopping()
+            logging.info('finished shopping' + brandMen + ' closet.')
         else:
+            logging.info('start downloading all brands...')
             for brand in self.brands:
                 brandWomen = brand + "-women"
                 brandMen = brand + "-men"
