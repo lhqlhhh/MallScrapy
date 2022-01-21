@@ -1,15 +1,22 @@
 import logging
+import sys
 
 from PyQt5.QtWidgets import (QWidget, QComboBox, QMessageBox, QScrollArea, QPlainTextEdit, QPushButton, QFormLayout, QLabel)
 from PyQt5.QtGui import QIcon
 from PyQt5 import QtCore
+
+import emitstream
 import farfetch
 import logsignal
+import tester
 
 
-class GUI(QWidget):
+class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
+
+        # # Install the custom output stream
+        # sys.stdout = emitstream.EmitStream(textWritten=self.normalOutputWritten)
 
         self.setGeometry(600, 400, 900, 550)
         self.setWindowTitle("Spider")
@@ -65,7 +72,7 @@ class GUI(QWidget):
             self.combox.addItem(brand[0], brand[1])
         # download button
         self.downloadBtn = QPushButton('Download', self)
-        self.downloadBtn.clicked.connect(self.download)
+        self.downloadBtn.clicked.connect(self.tester)
         # text edit to print running process
 
         # # 添加滚动
@@ -83,6 +90,10 @@ class GUI(QWidget):
         self.formlayout.addRow(self.textBox)
         self.setLayout(self.formlayout)
         self.show()
+
+    # def __del__(self):
+    #     # Restore sys.stdout
+    #     sys.stdout = sys.__stdout__
 
     def download(self):
         logging.info('start downloading...')
@@ -120,3 +131,18 @@ class GUI(QWidget):
                     menShopping.shopping()
                 else:
                     menShopping.shopping()
+
+    # def normalOutputWritten(self, text):
+    #     cursor = self.textBox.textCursor()
+    #     cursor.movePosition(QtGui.QTextCursor.End)
+    #     cursor.insertText(text)
+    #     self.textBox.setTextCursor(cursor)
+    #     self.textBox.ensureCursorVisible()
+
+    def tester(self):
+        print("test")
+        logging.info("tester func")
+        t = tester.Tester()
+        t.run()
+
+
